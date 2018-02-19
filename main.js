@@ -13,7 +13,7 @@ const DadJokeAPI = (function() {
     return getJSON(defaultUrl);
   };
 
-  const fetchJokesByTerm = function(page, term) {
+  const fetchJokesByTerm = function(term) {
     const url = `${defaultUrl}/search?term=${term}`;
     return getJSON(url);
   };
@@ -26,41 +26,33 @@ const DadJokeAPI = (function() {
 
 const model = (function() {
   let jokes = [];
-  let count = 0;
   let currentQuery = "";
 
   const state = {
     jokes,
-    count,
     currentQuery
   };
 
   const appendJokes = function(jokesArr) {
     jokesArr.forEach(joke => {
-      jokes.push(joke);
+      state.jokes.push(joke);
     });
-  };
-
-  const incrementJokeCount = function() {
-    count += 1;
   };
 
   const resetJokes = function() {
     jokes = [];
-    count = 0;
     currentQuery = "";
   };
 
   const setJoke = function(query) {
-    currentQuery = query;
+    state.currentQuery = query;
   };
 
   return {
     state,
     setJoke,
     resetJokes,
-    appendJokes,
-    incrementJokeCount
+    appendJokes
   };
 })();
 
@@ -133,12 +125,13 @@ const view = (function() {
 
 const handlers = (function() {
   const getJoke = function() {
+    model.resetJokes();
     DadJokeAPI.fetchRandJoke()
       .then(res => {
         model.appendJokes([res.joke]);
         view.render(res.joke);
       })
-      .catch(err => console.error(err));
+      .catch(view.drawError);
   };
 
   const randJoke = function() {
@@ -175,13 +168,20 @@ const handlers = (function() {
       if (searchField.value === "") {
         view.drawError("Please search a term.");
       } else {
+        model.setJoke(searchField.value);
         view.clearText();
         view.drawSpinner();
         view.drawNextBtn();
-        model.currentQuery = searchField.value;
-        DadJokeAPI.fetchJokesByTerm(model.state.count, model.currentQuery).then(res => {
-          model.appendJokes([...res.results]);
-          view.render(model.state.jokes.pop().joke);
+        DadJokeAPI.fetchJokesByTerm(model.state.currentQuery).then(res => {
+          if (res.results.length > 0) {
+            model.appendJokes([...res.results]);
+            view.render(model.state.jokes.pop().joke);
+          } else {
+            view.drawError(`Could not find results for ${model.state.currentQuery}`);
+            view.clearText();
+            view.drawNewSearchBtn();
+            handlers.searchQuery();
+          }
         });
         nextJoke();
       }
