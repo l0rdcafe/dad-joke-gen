@@ -1,18 +1,26 @@
 const DadJokeAPI = (function() {
-  const fetchRandJoke = function() {
-    const url = "http://icanhazdadjoke.com/";
+  const defaultUrl = "https://icanhazdadjoke.com/";
+  function getJSON(url) {
     return fetch(url, {
       headers: {
         Accept: "application/json"
       }
     })
       .then(res => res.json())
-      .then(res => res)
-      .catch(err => console.error(err));
+      .catch(err => err);
+  }
+  const fetchRandJoke = function() {
+    return getJSON(defaultUrl);
+  };
+
+  const fetchJokesByTerm = function(page, term) {
+    const url = `${defaultUrl}/search?term=${term}`;
+    return getJSON(url);
   };
 
   return {
-    fetchRandJoke
+    fetchRandJoke,
+    fetchJokesByTerm
   };
 })();
 
@@ -71,14 +79,55 @@ const view = (function() {
     spinnerSpan.appendChild(spinnerIcon);
     jokeText.appendChild(spinnerSpan);
   };
+
   const clearText = function() {
     document.getElementById("jokeText").textContent = "";
+  };
+
+  const drawError = function(message) {
+    const errorNotif = document.createElement("div");
+    errorNotif.className = "is-danger notification";
+    errorNotif.textContent = message;
+    const cont = document.querySelector(".container");
+    cont.insertBefore(errorNotif, cont.firstChild);
+    setTimeout(() => {
+      errorNotif.parentNode.removeChild(errorNotif);
+    }, 2500);
+  };
+
+  const drawNextBtn = function() {
+    const searchBtn = document.getElementById("searchTerm");
+    const nextBtnParent = searchBtn.parentNode;
+    const nextBtn = document.createElement("button");
+    nextBtn.className = "button is-warning";
+    nextBtn.style.display = "block";
+    nextBtn.style.margin = "auto";
+    nextBtn.setAttribute("id", "nextJoke");
+    nextBtn.textContent = "Next Joke";
+    searchBtn.parentNode.removeChild(searchBtn);
+    nextBtnParent.appendChild(nextBtn);
+  };
+
+  const drawNewSearchBtn = function() {
+    const nextBtn = document.getElementById("nextJoke");
+    const searchBtn = document.createElement("button");
+    const searchBtnParent = nextBtn.parentNode;
+    searchBtn.className = "button is-warning";
+    searchBtn.style.display = "block";
+    searchBtn.style.margin = "auto";
+    searchBtn.setAttribute("id", "searchTerm");
+    searchBtn.textContent = "Search Term";
+    nextBtn.parentNode.removeChild(nextBtn);
+    searchBtnParent.appendChild(searchBtn);
   };
 
   return {
     render,
     drawSpinner,
-    clearText
+    clearText,
+    drawError,
+    drawNextBtn,
+    drawNewSearchBtn
   };
 })();
 
@@ -103,13 +152,53 @@ const handlers = (function() {
     randBtn.addEventListener("click", randJoke);
   };
 
+  const nextJoke = function() {
+    const nextBtn = document.getElementById("nextJoke");
+
+    function getNext() {
+      if (model.state.jokes.pop()) {
+        view.render(model.state.jokes.pop().joke);
+      } else {
+        view.drawError("Out of jokes!");
+        view.drawNewSearchBtn();
+        handlers.searchQuery();
+      }
+    }
+    nextBtn.addEventListener("click", getNext);
+  };
+
+  const searchQuery = function() {
+    const searchBtn = document.getElementById("searchTerm");
+    const searchJoke = function() {
+      const searchField = document.getElementById("searchField");
+
+      if (searchField.value === "") {
+        view.drawError("Please search a term.");
+      } else {
+        view.clearText();
+        view.drawSpinner();
+        view.drawNextBtn();
+        model.currentQuery = searchField.value;
+        DadJokeAPI.fetchJokesByTerm(model.state.count, model.currentQuery).then(res => {
+          model.appendJokes([...res.results]);
+          view.render(model.state.jokes.pop().joke);
+        });
+        nextJoke();
+      }
+    };
+    searchBtn.addEventListener("click", searchJoke);
+  };
+
   return {
     fetchJoke,
-    randJoke
+    randJoke,
+    searchQuery,
+    nextJoke
   };
 })();
 
 document.addEventListener("DOMContentLoaded", () => {
   handlers.randJoke();
   handlers.fetchJoke();
+  handlers.searchQuery();
 });
