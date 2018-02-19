@@ -149,7 +149,7 @@ const handlers = (function() {
     const nextBtn = document.getElementById("nextJoke");
 
     function getNext() {
-      if (model.state.jokes.pop()) {
+      if (model.state.jokes.pop() !== undefined) {
         view.render(model.state.jokes.pop().joke);
       } else {
         view.drawError("Out of jokes!");
