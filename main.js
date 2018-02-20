@@ -1,3 +1,43 @@
+function qs(selector, scope) {
+  return (scope || document).querySelector(selector);
+}
+
+function gId(selector, scope) {
+  return (scope || document).getElementById(selector);
+}
+
+function qsa(selector, scope) {
+  return (scope || document).querySelectorAll(selector);
+}
+
+function $on(target, type, cb, useCapture) {
+  target.addEventListener(type, cb, !!useCapture);
+}
+
+function $delegate(target, selector, type, handler) {
+  const useCapture = type === "blur" || type === "focus";
+
+  function dispatchEvent(event) {
+    const targetElement = event.target;
+    const potentialElements = qsa(selector, target);
+    if (Array.from(potentialElements).includes(targetElement)) {
+      handler.call(targetElement, event);
+    }
+  }
+  $on(target, type, dispatchEvent, useCapture);
+}
+
+function $parent(element, tagName) {
+  if (!element.parentNode) {
+    return undefined;
+  }
+
+  if (element.parentNode.tagName.toLowerCase() === tagName.toLowerCase()) {
+    return element.parentNode;
+  }
+  return $parent(element.parentNode, tagName);
+}
+
 const DadJokeAPI = (function() {
   const defaultUrl = "https://icanhazdadjoke.com/";
   function getJSON(url) {
@@ -25,12 +65,9 @@ const DadJokeAPI = (function() {
 })();
 
 const model = (function() {
-  let jokes = [];
-  let currentQuery = "";
-
   const state = {
-    jokes,
-    currentQuery
+    jokes: [],
+    currentQuery: ""
   };
 
   const appendJokes = function(jokesArr) {
@@ -40,8 +77,8 @@ const model = (function() {
   };
 
   const resetJokes = function() {
-    jokes = [];
-    currentQuery = "";
+    state.jokes = [];
+    state.currentQuery = "";
   };
 
   const setJoke = function(query) {
@@ -58,59 +95,44 @@ const model = (function() {
 
 const view = (function() {
   const render = function(joke) {
-    const jokeText = document.getElementById("jokeText");
+    const jokeText = gId("jokeText");
     jokeText.innerHTML = joke;
   };
 
   const drawSpinner = function() {
-    const jokeText = document.getElementById("jokeText");
-    const spinnerSpan = document.createElement("span");
-    const spinnerIcon = document.createElement("i");
-    spinnerIcon.className = "fa fa-spinner fa-spin fa-lg";
-    spinnerSpan.className = "has-text-centered loading";
-    spinnerSpan.appendChild(spinnerIcon);
-    jokeText.appendChild(spinnerSpan);
+    const jokeText = gId("jokeText");
+    const spinner = `<span class="has-text-centered loading"><i class="fa fa-spinner fa-spin fa-lg"></i></span>`;
+    jokeText.innerHTML = spinner;
   };
 
   const clearText = function() {
-    document.getElementById("jokeText").textContent = "";
+    gId("jokeText").textContent = "";
   };
 
   const drawError = function(message) {
-    const errorNotif = document.createElement("div");
-    errorNotif.className = "is-danger notification";
-    errorNotif.textContent = message;
-    const cont = document.querySelector(".container");
-    cont.insertBefore(errorNotif, cont.firstChild);
+    const errorNotif = `<div class="is-danger notification has-text-centered" style="width: 30%; display: block; margin: auto; margin-bottom: 1.25em;">${message}</div>`;
+    const sect = qs(".section");
+    sect.insertAdjacentHTML("afterbegin", errorNotif);
     setTimeout(() => {
-      errorNotif.parentNode.removeChild(errorNotif);
-    }, 2500);
+      const notif = qs(".notification");
+      $parent(notif, "section").removeChild(notif);
+    }, 2000);
   };
 
   const drawNextBtn = function() {
-    const searchBtn = document.getElementById("searchTerm");
-    const nextBtnParent = searchBtn.parentNode;
-    const nextBtn = document.createElement("button");
-    nextBtn.className = "button is-warning";
-    nextBtn.style.display = "block";
-    nextBtn.style.margin = "auto";
-    nextBtn.setAttribute("id", "nextJoke");
-    nextBtn.textContent = "Next Joke";
-    searchBtn.parentNode.removeChild(searchBtn);
-    nextBtnParent.appendChild(nextBtn);
+    const searchBtn = gId("searchTerm");
+    const nextBtnParent = $parent(searchBtn, "h1");
+    const nextBtn = `<button class="button is-warning" style="border-bottom-left-radius: 0; border-top-left-radius: 0;" id="nextJoke">Next Joke</button>`;
+    nextBtnParent.removeChild(searchBtn);
+    nextBtnParent.insertAdjacentHTML("beforeend", nextBtn);
   };
 
   const drawNewSearchBtn = function() {
-    const nextBtn = document.getElementById("nextJoke");
-    const searchBtn = document.createElement("button");
-    const searchBtnParent = nextBtn.parentNode;
-    searchBtn.className = "button is-warning";
-    searchBtn.style.display = "block";
-    searchBtn.style.margin = "auto";
-    searchBtn.setAttribute("id", "searchTerm");
-    searchBtn.textContent = "Search Term";
-    nextBtn.parentNode.removeChild(nextBtn);
-    searchBtnParent.appendChild(searchBtn);
+    const nextBtn = gId("nextJoke");
+    const searchBtn = `<button class="button is-warning" style="border-bottom-left-radius: 0; border-top-left-radius: 0;" id="searchTerm">Search Term</button>`;
+    const searchBtnParent = $parent(nextBtn, "h1");
+    searchBtnParent.removeChild(nextBtn);
+    searchBtnParent.insertAdjacentHTML("beforeend", searchBtn);
   };
 
   return {
@@ -141,12 +163,12 @@ const handlers = (function() {
   };
 
   const fetchJoke = function() {
-    const randBtn = document.getElementById("randJoke");
-    randBtn.addEventListener("click", randJoke);
+    const randBtn = gId("randJoke");
+    $on(randBtn, "click", randJoke);
   };
 
   const nextJoke = function() {
-    const nextBtn = document.getElementById("nextJoke");
+    const nextBtn = gId("nextJoke");
 
     function getNext() {
       if (model.state.jokes.pop() !== undefined) {
@@ -157,17 +179,18 @@ const handlers = (function() {
         handlers.searchQuery();
       }
     }
-    nextBtn.addEventListener("click", getNext);
+    $on(nextBtn, "click", getNext);
   };
 
   const searchQuery = function() {
-    const searchBtn = document.getElementById("searchTerm");
+    const searchBtn = gId("searchTerm");
     const searchJoke = function() {
-      const searchField = document.getElementById("searchField");
+      const searchField = gId("searchField");
 
       if (searchField.value === "") {
         view.drawError("Please search a term.");
       } else {
+        model.resetJokes();
         model.setJoke(searchField.value);
         view.clearText();
         view.drawSpinner();
@@ -186,7 +209,7 @@ const handlers = (function() {
         nextJoke();
       }
     };
-    searchBtn.addEventListener("click", searchJoke);
+    $on(searchBtn, "click", searchJoke);
   };
 
   return {
@@ -197,7 +220,7 @@ const handlers = (function() {
   };
 })();
 
-document.addEventListener("DOMContentLoaded", () => {
+$on(document, "DOMContentLoaded", () => {
   handlers.randJoke();
   handlers.fetchJoke();
   handlers.searchQuery();
