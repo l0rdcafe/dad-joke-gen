@@ -1,0 +1,43 @@
+#searchTerm,
+#nextJoke {
+    border-bottom-left-radius: 0;
+    border-top-left-radius: 0;
+}
+
+#searchField {
+    border-bottom-right-radius: 0;
+    border-top-right-radius: 0;
+    box-shadow: 0;
+}
+
+#jokeText {
+    margin-top: 0.75em;
+}
+
+.flex-center {
+    display: flex;
+    justify-content: center;
+}
+
+.footer {
+    height: 10vh;
+    font-size: 1.25rem;
+    padding: 0.5% 0;
+}
+
+.footer h4 {
+    margin-top: 0;
+    font-size: 1.5rem;
+}
+
+.footer__social {
+    margin: 0;
+}
+
+.social__item {
+    margin-bottom: 0;
+}
+
+.notif {
+    justify-content: center;
+}
