@@ -1,30 +1,36 @@
 <!DOCTYPE html>
-<html style="background-color: #186a9e;">
+<html>
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Dad Jokez</title>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.5.1/css/bulma.min.css">
-</head>
+  <title>Dad Jokez – Dad Joke Generator using icanhazdadjoke API</title>
+  <script defer src="https://use.fontawesome.com/releases/v5.0.9/js/all.js" integrity="sha384-8iPTk2s/jMVj81dnzb/iFR2sdA7u06vHJyyLlAd4snFpCl/SnyUjRrbdJsw1pGIl" crossorigin="anonymous"></script>
+  
+<link href="cc-ss.min.css" rel="stylesheet"></head>
 
-<body>
-  <section class="section">
-    <div class="container columns is-multiline is-centered" style="margin: auto;">
-      <h1 class="title">
-        <button class="button is-warning" id="randJoke" style="color: #0d2a7d;">Fetch a random joke</button>
-      </h1>
-    </div>
-      <h1 class ="title column columns" style="margin-top: 0.75rem;">
-    <input class="column is-offset-4 is-3 input" id="searchField" placeholder="Search jokes by query" style="margin-bottom: 1rem; padding: 0; padding-left: 0.75rem; border-bottom-right-radius: 0; border-top-right-radius: 0;">
-    <button class="button is-warning" id="searchTerm" style="color: #0d2a7d; border-bottom-left-radius: 0; border-top-left-radius: 0;">Search Term</button>
-  </h1>
-  <div class="container columns is-multiline is-centered" style="margin: auto;">
-  <h1 class="title column is-12 has-text-centered" style="color: #bde3f5;" id="jokeText"></h1>
-</div>
+<body class="primary">
+  <section class="section text-c">
+    <h1 class="text-warning">Dad Jokez</h1>
+      <h2>
+        <button class="button--secondary" id="randJoke">Fetch a random joke</button>
+      </h2>
+      <h3 class="flex-center">
+    <input class="input" type="text" id="searchField" placeholder="Search jokes by query"><button class="button--info" id="searchTerm">Search Term</button>
+  </h3>
+  <h2 id="jokeText" class="text-black"></h2>
   </section>
-  <script src="main.js"></script>
-</body>
+  <footer class="footer">
+      <div class="footer__body">
+          <h4>Made by 👑 l0rdcafe 👑</h4>
+          <ul class="footer__social">
+              <li class="social__item"><a href="mailto:me@l0rdcafe.com"><i class="far fa-envelope fa-lg"></i></a></li>
+              <li class="social__item"><a href="https://github.com/l0rdcafe/"><i class="fab fa-github fa-lg"></i></a></li>
+              <li class="social__item"><a href="https://soundcloud.com/the-lords-blueprints"><i class="fab fa-soundcloud fa-lg"></i></a></li>
+              <li class="social__item"><a href="https://twitter.com/l0rdcafe"><i class="fab fa-twitter fa-lg"></i></a></li>
+          </ul>
+      </div>
+  </footer>
+<script type="text/javascript" src="main.js"></script></body>
 
 </html>
